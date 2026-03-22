@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>KINETICO | Digital Architecture & Kinetic Logic</title>
+    
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#ffc5a8",
+              "on-surface-variant": "#adaaaa",
+              "on-primary-fixed-variant": "#0f009d",
+              "tertiary-fixed": "#ffffff",
+              "outline": "#767575",
+              "surface-variant": "#262626",
+              "tertiary-dim": "#ebebeb",
+              "secondary-fixed-dim": "#ffb28a",
+              "on-tertiary-fixed-variant": "#6c6d6e",
+              "on-tertiary": "#5e5f5f",
+              "on-secondary-fixed-variant": "#883900",
+              "background": "#0e0e0e",
+              "error": "#ff6e84",
+              "inverse-surface": "#fcf9f8",
+              "surface-container-low": "#131313",
+              "on-primary-container": "#0a0081",
+              "on-secondary-container": "#fff6f3",
+              "on-primary-fixed": "#000000",
+              "surface-container": "#1a1a1a",
+              "primary-fixed-dim": "#8386ff",
+              "tertiary": "#f9f9f9",
+              "primary-dim": "#5f62f4",
+              "on-secondary": "#3b1500",
+              "on-tertiary-container": "#555757",
+              "on-primary": "#1000a3",
+              "secondary-container": "#9d4300",
+              "surface-container-highest": "#262626",
+              "on-tertiary-fixed": "#4f5051",
+              "error-container": "#a70138",
+              "primary": "#a3a6ff",
+              "tertiary-fixed-dim": "#f1f1f1",
+              "surface-container-high": "#20201f",
+              "on-secondary-fixed": "#5b2400",
+              "surface-tint": "#a3a6ff",
+              "surface": "#0e0e0e",
+              "surface-bright": "#2c2c2c",
+              "on-error-container": "#ffb2b9",
+              "secondary-dim": "#fd761a",
+              "surface-container-lowest": "#000000",
+              "on-background": "#ffffff",
+              "tertiary-container": "#ebebeb",
+              "outline-variant": "#484847",
+              "on-surface": "#ffffff",
+              "on-error": "#490013",
+              "surface-dim": "#0e0e0e",
+              "primary-container": "#9396ff",
+              "secondary": "#fd761a",
+              "inverse-primary": "#4849dd",
+              "primary-fixed": "#9396ff",
+              "inverse-on-surface": "#565555",
+              "error-dim": "#d73357"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Geist Mono"],
+              "mono": ["Geist Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-gradient {
+            background: linear-gradient(135deg, rgba(163, 166, 255, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+        .bg-grid-pattern {
+            background-image: radial-gradient(circle, #484847 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, black, transparent);
+        }
+        .kinetic-grid {
+            background-image: linear-gradient(to right, #484847 1px, transparent 1px),
+                              linear-gradient(to bottom, #484847 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.05;
+        }
+        .kinetic-gradient {
+            background: linear-gradient(135deg, #a3a6ff 0%, #5f62f4 100%);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(163, 166, 255, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary selection:text-on-primary">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // Components
+        const Header = () => {
+            const navigate = useNavigate();
+            const location = useLocation();
+            
+            const isActive = (path) => location.pathname === path;
+            const linkClass = (path) => `font-['Space_Grotesk'] uppercase tracking-tighter text-sm transition-all duration-400 ease-in-out hover:text-white ${isActive(path) ? 'text-white border-b border-[#a3a6ff] pb-1' : 'text-[#adaaaa]'}`;
+
+            return (
+                <header class="bg-transparent backdrop-blur-md dark:bg-black/10 docked full-width top-0 sticky z-50 border-b border-[#484847]/10">
+                    <nav class="flex justify-between items-center w-full px-8 py-6 max-w-[1440px] mx-auto">
+                        <Link to="/" class="text-2xl font-light tracking-[-0.02em] text-white dark:text-white uppercase font-headline">
+                            KINETICO
+                        </Link>
+                        <div class="hidden md:flex gap-12">
+                            <Link class={linkClass('/services')} to="/services">Services</Link>
+                            <Link class={linkClass('/portfolio')} to="/portfolio">Portfolio</Link>
+                            <Link class={linkClass('/affiliates')} to="/affiliates">Affiliates</Link>
+                            <Link class={linkClass('/contact')} to="/contact">Contact</Link>
+                        </div>
+                        <button 
+                            onClick={() => navigate('/contact')}
+                            class="bg-gradient-to-br from-primary to-primary-dim text-on-primary px-6 py-2.5 text-xs font-medium uppercase tracking-widest rounded-sm active:scale-[0.98] transition-transform"
+                        >
+                            Initiate Collaboration
+                        </button>
+                    </nav>
+                </header>
+            );
+        };
+
+        const Footer = () => (
+            <footer class="bg-[#000000] dark:bg-[#000000] full-width relative border-t border-[#484847]/10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-8 py-12 max-w-[1440px] mx-auto text-left">
+                    <div>
+                        <div class="font-bold text-white font-headline text-xl mb-6">KINETICO_LABS</div>
+                        <p class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-[#adaaaa] max-w-xs leading-relaxed">
+                            Precision design and engineering for the next generation of digital products.
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <div class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-white mb-2">Connect</div>
+                        <div class="flex flex-col gap-2">
+                            <a class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-[#adaaaa] hover:text-[#fd761a] transition-colors duration-300" href="#">Twitter</a>
+                            <a class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-[#adaaaa] hover:text-[#fd761a] transition-colors duration-300" href="#">LinkedIn</a>
+                            <a class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-[#adaaaa] hover:text-[#fd761a] transition-colors duration-300" href="#">Dribbble</a>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-between items-start md:items-end">
+                        <div class="font-['Geist_Mono'] text-[10px] uppercase tracking-widest text-[#adaaaa]">
+                            © 2024 KINETICO_LABS. ALL RIGHTS RESERVED.
+                        </div>
+                        <div class="mt-4 flex gap-6">
+                            <div class="text-[9px] font-['Geist_Mono'] text-outline-variant">EN_US</div>
+                            <div class="text-[9px] font-['Geist_Mono'] text-outline-variant">UTC-05:00</div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const LandingPage = () => {
+            const navigate = useNavigate();
+            return (
+                <main class="relative">
+                    {/* Hero Section */}
+                    <section class="relative min-h-[921px] flex flex-col justify-center px-8 max-w-[1440px] mx-auto overflow-hidden">
+                        <div class="mb-12">
+                            <span class="font-mono text-[10px] tracking-[0.3em] text-secondary uppercase bg-surface-variant/30 px-3 py-1 border-l-2 border-secondary">
+                                01 // THE ARRIVAL
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-12 gap-8 items-end">
+                            <div class="col-span-12 lg:col-span-9">
+                                <h1 class="text-6xl md:text-8xl font-light tracking-tight text-white leading-[0.9] font-headline">
+                                    Crafting digital experiences at the intersection of <span class="text-primary italic">logic</span> and emotion.
+                                </h1>
+                            </div>
+                            <div class="col-span-12 lg:col-span-3 pb-4">
+                                <p class="text-on-surface-variant text-lg max-w-xs font-light leading-relaxed">
+                                    A high-precision laboratory for bespoke architectural systems and kinetic interfaces.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 -z-10 bg-grid-pattern opacity-20 pointer-events-none"></div>
+                        <div class="absolute bottom-12 right-8 hidden lg:block text-right">
+                            <div class="font-mono text-[10px] text-on-surface-variant/40 leading-tight">
+                                COORD_X: 40.7128<br/>
+                                COORD_Y: -74.0060<br/>
+                                STATUS: LIVE_ENVIRONMENT
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Bento Grid */}
+                    <section class="py-24 px-8 max-w-[1440px] mx-auto">
+                        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                            <div>
+                                <span class="font-mono text-xs text-primary mb-2 block uppercase tracking-widest">Selected Works</span>
+                                <h2 class="text-4xl font-light text-white font-headline">Featured Explorations</h2>
+                            </div>
+                            <Link to="/portfolio" class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest border-b border-outline-variant/20 pb-1">
+                                view_all_projects_v.01
+                            </Link>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            <div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-sm border border-outline-variant/10 aspect-video md:aspect-auto h-[500px]">
+                                <div class="absolute inset-0 opacity-60 group-hover:opacity-100 transition-opacity duration-700">
+                                    <img alt="Abstract 3D Structure" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUsod9-_TUj5yAZPNhC3t85psoepGhrVX04wgcKj-LHN0lExV2DS9EPog4bnQBmqfY9EUTSIPErfIWnY0TfX68FZqBudzpXxm5TgReaHdRDdLpcxPOrE0m28_oVNZ4LpCw-L1NdLhVn7n2PL-P8YB0TzMhGtfXlzGnIK9e4IYpNZpm07Xk4uMfNI0Qy4VI1IFoh7yPdJdp9jI4cvY_z_uDZ36bTYUa-jOuX1d1BTr79aK800YuMbOit5YzzEwgGJoaGdfYAOOIGZU"/>
+                                </div>
+                                <div class="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-background to-transparent">
+                                    <span class="font-mono text-[10px] text-secondary mb-2 block">PROJECT_01 // CORE_OS</span>
+                                    <h3 class="text-2xl font-headline text-white mb-2">Neural Interface Design</h3>
+                                    <p class="text-on-surface-variant max-w-md text-sm">Building the foundation for high-performance data visualization and user interaction.</p>
+                                </div>
+                            </div>
+                            <div class="md:col-span-4 group relative overflow-hidden bg-surface-container rounded-sm border border-outline-variant/10 h-[500px]">
+                                <div class="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700">
+                                    <img alt="Digital Waveforms" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiy35SEklKcikoeq-TG9Al7F8_JafflZrdyeyNHVqttCHkL4vzCsnjk_yE7tbh_sIgqgEfIyL5Gp6WHbgCABJwZlJgayAzJ_7buYzUiX1mBTqsV7pM1QGNcEeaxqLi9Lk2bYC0_UB4Gg-au8a85cK2ehtoc1cQmnFwerEkN469QpEqxjJdOXmdYfmyldYZlHAuebYZopyfE_UROrsiewgi-cmnIENQ5KKUfck_wXS2tTgk5eejqBVa0Ep4hIEulifzjUeOawbpYX4"/>
+                                </div>
+                                <div class="absolute inset-0 p-8 flex flex-col justify-between">
+                                    <div class="flex justify-between items-start">
+                                        <span class="font-mono text-[10px] text-primary uppercase">Active_Stream</span>
+                                        <span class="material-symbols-outlined text-white text-xl">north_east</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-mono text-[10px] text-secondary mb-2 block">PROJECT_02</span>
+                                        <h3 class="text-2xl font-headline text-white">Kinetic Identity</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="py-24 border-t border-outline-variant/10">
+                        <div class="max-w-[1440px] mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-12">
+                            <div>
+                                <div class="font-mono text-[10px] text-on-surface-variant mb-4 uppercase tracking-[0.2em]">Deployment_Count</div>
+                                <div class="text-4xl font-headline text-white">42+</div>
+                            </div>
+                            <div>
+                                <div class="font-mono text-[10px] text-on-surface-variant mb-4 uppercase tracking-[0.2em]">Efficiency_Ratio</div>
+                                <div class="text-4xl font-headline text-white">99.8%</div>
+                            </div>
+                            <div>
+                                <div class="font-mono text-[10px] text-on-surface-variant mb-4 uppercase tracking-[0.2em]">Response_Time</div>
+                                <div class="text-4xl font-headline text-white">120ms</div>
+                            </div>
+                            <div>
+                                <div class="font-mono text-[10px] text-on-surface-variant mb-4 uppercase tracking-[0.2em]">Uptime_Status</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+                                    <div class="text-4xl font-headline text-white uppercase">Live</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="py-32 px-8 max-w-[1440px] mx-auto">
+                        <div class="grid grid-cols-12">
+                            <div class="col-span-12 lg:col-span-8 lg:col-start-3 text-center">
+                                <span class="font-mono text-xs text-primary mb-8 block uppercase tracking-[0.4em]">Ready to begin?</span>
+                                <h2 class="text-5xl md:text-7xl font-light text-white mb-12 font-headline leading-tight">Let's build the next <span class="text-secondary italic">evolution</span> of your digital presence.</h2>
+                                <button onClick={() => navigate('/contact')} class="bg-gradient-to-br from-primary to-primary-dim text-on-primary-container px-10 py-4 rounded-sm font-headline text-lg uppercase tracking-widest font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(163,166,255,0.15)]">
+                                    Initiate Collaboration
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const ServicesPage = () => {
+            const navigate = useNavigate();
+            return (
+                <main class="max-w-[1440px] mx-auto px-8 py-20">
+                    <section class="mb-32">
+                        <div class="grid grid-cols-12 gap-6 items-end">
+                            <div class="col-span-12 md:col-span-8">
+                                <div class="font-label text-secondary uppercase tracking-[0.3em] text-[10px] mb-6 flex items-center gap-3">
+                                    <span class="w-12 h-[1px] bg-secondary"></span>
+                                    The Laboratory / Capabilities
+                                </div>
+                                <h1 class="font-headline text-5xl md:text-7xl font-light tracking-[-0.03em] leading-none mb-8">
+                                    Bridging the gap between <br/>
+                                    <span class="text-on-surface-variant italic">raw code</span> & human intuition.
+                                </h1>
+                            </div>
+                            <div class="col-span-12 md:col-span-4 pb-4">
+                                <p class="font-body text-on-surface-variant text-lg max-w-sm">
+                                    An architected environment where technical precision meets visceral experience. We don't just build; we engineer intent.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="grid grid-cols-1 md:grid-cols-2 border-t border-outline-variant/20">
+                        <div class="group border-r border-b border-outline-variant/20 p-12 transition-all duration-500 hover:bg-surface-container-low/50 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-20">
+                                <span class="font-label text-primary text-xs tracking-widest">S_ID: 001_VISUAL_LOGIC</span>
+                                <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors duration-500">architecture</span>
+                            </div>
+                            <h2 class="font-headline text-4xl font-light mb-4">UI/UX & Design</h2>
+                            <p class="font-body text-on-surface-variant mb-12 max-w-md">Constructing interfaces that respond to cognitive patterns. We prioritize spatial hierarchy and motion physics to ensure seamless navigation.</p>
+                            <div class="grid grid-cols-2 gap-y-3 font-label text-[11px] text-white/80">
+                                <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary/40"></span> SYSTEM_ARCHITECTURE</div>
+                                <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary/40"></span> KINETIC_PROTOTYPING</div>
+                            </div>
+                        </div>
+                        <div class="group border-b border-outline-variant/20 p-12 transition-all duration-500 hover:bg-surface-container-low/50 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-20">
+                                <span class="font-label text-primary text-xs tracking-widest">S_ID: 002_STRUCTURAL_DEV</span>
+                                <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors duration-500">settings_input_component</span>
+                            </div>
+                            <h2 class="font-headline text-4xl font-light mb-4">Product Development</h2>
+                            <p class="font-body text-on-surface-variant mb-12 max-w-md">Transforming raw concepts into scalable digital ecosystems. Our engineering process is rooted in modular logic and performance optimization.</p>
+                            <div class="grid grid-cols-2 gap-y-3 font-label text-[11px] text-white/80">
+                                <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary/40"></span> FULL_STACK_ENGINEERING</div>
+                                <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary/40"></span> API_INFRASTRUCTURE</div>
+                            </div>
+                        </div>
+                        {/* More service nodes omitted for brevity but following same structure */}
+                    </section>
+
+                    <section class="mt-48 mb-24 text-center">
+                        <h2 class="font-headline text-5xl md:text-8xl font-light tracking-tighter mb-12">
+                            Initiate <span class="italic text-on-surface-variant">the sequence</span>.
+                        </h2>
+                        <div class="flex flex-col md:flex-row gap-6 justify-center">
+                            <button onClick={() => navigate('/contact')} class="bg-gradient-to-br from-primary to-primary-dim text-on-primary px-10 py-5 font-headline font-medium uppercase tracking-widest text-sm rounded-sm active:scale-[0.98] transition-transform flex items-center gap-4 justify-center">
+                                Start Collaboration <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+                            <button onClick={() => navigate('/portfolio')} class="border border-outline-variant/40 hover:border-primary/60 text-white px-10 py-5 font-headline font-medium uppercase tracking-widest text-sm rounded-sm transition-all flex items-center gap-4 justify-center">
+                                View Methodology
+                            </button>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const PortfolioPage = () => {
+            const navigate = useNavigate();
+            return (
+                <main class="relative min-h-screen overflow-hidden">
+                    <div class="absolute inset-0 hero-gradient pointer-events-none"></div>
+                    <section class="max-w-[1440px] mx-auto px-8 pt-32 pb-16 relative">
+                        <div class="font-mono text-secondary text-xs tracking-widest uppercase mb-6 opacity-80">Selected_Works_Archive</div>
+                        <h1 class="font-headline text-6xl md:text-8xl leading-tight max-w-4xl font-light">
+                            Featured <span class="text-primary italic">Explorations</span> in Kinetic Logic.
+                        </h1>
+                    </section>
+
+                    <section class="max-w-[1440px] mx-auto px-8 py-20">
+                        <div class="grid grid-cols-12 gap-6">
+                            <div class="col-span-12 md:col-span-8 group relative overflow-hidden bg-surface-container rounded-sm border border-outline-variant/10 hover:border-primary/30 transition-all duration-500 min-h-[500px]">
+                                <div class="p-10 h-full flex flex-col justify-between">
+                                    <div>
+                                        <div class="font-mono text-4xl font-bold opacity-10 group-hover:opacity-100 transition-opacity duration-500 mb-4">01</div>
+                                        <h3 class="font-headline font-light text-4xl mb-4 group-hover:translate-x-2 transition-transform duration-500">Fintech Dashboard</h3>
+                                        <p class="text-on-surface-variant max-w-md text-lg">High-frequency trading interface designed for institutional liquidity management.</p>
+                                    </div>
+                                    <button onClick={() => navigate('/contact')} class="font-mono text-xs flex items-center gap-2 group/btn">
+                                        VIEW_CASE_STUDY <span class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                                    </button>
+                                </div>
+                                <div class="absolute top-0 right-0 w-1/3 h-full opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-700">
+                                    <img class="w-full h-full object-cover grayscale brightness-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWS9kLZlqoku05AQDtQPfssqg2Hrx97I7i42--GHVJ40woZ29ZSgvE6BN9q0UDKvbWau_Zlu_DtyqlWz19xnWClfs-Iy1xncdt6i1h04x9z-RI46qow6ytEbUvcMbKajq6tFFG0H_frqsTK4Xb7HwvSHhj_Gw_gXTvBZMmmirE8-Tg8MvV0UjJU_ZWeoaYBhUospqQuA2aS8OWg2oFPZbJ_SlYshU_T7i6KcCgyGFQ_J3R0ayKBoPtVHb3UrEhNJ1E06fEKAGLMtI" />
+                                </div>
+                            </div>
+                            <div class="hidden md:flex col-span-4 flex-col justify-center px-12 border-l border-outline-variant/10">
+                                <div class="font-mono text-[10px] text-on-surface-variant space-y-4">
+                                    <div class="flex justify-between"><span>GRID_STATUS</span><span class="text-secondary">ACTIVE</span></div>
+                                    <div class="flex justify-between"><span>LOC_REF</span><span>40.7128° N, 74.0060° W</span></div>
+                                    <div class="h-px bg-outline-variant/20 w-full"></div>
+                                    <p class="opacity-60">Every pixel is an instruction, every interaction a logic gate.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const AffiliatePage = () => {
+            const [submitted, setSubmitted] = useState(false);
+            return (
+                <main class="max-w-[1440px] mx-auto px-8 py-20 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[120px] -z-10 rounded-full"></div>
+                    <section class="grid grid-cols-12 gap-8 mb-32">
+                        <div class="col-span-12 md:col-span-8 lg:col-span-7">
+                            <h1 class="font-headline text-6xl md:text-8xl font-light tracking-tighter leading-[0.9] text-white mb-8">
+                                THE <br/><span class="text-primary italic">BRIDGE</span> PROGRAM
+                            </h1>
+                            <p class="text-on-surface-variant text-xl md:text-2xl font-light leading-relaxed max-w-xl">
+                                High-precision partnership for modern builders. Scale your income by connecting world-class talent with elite digital projects.
+                            </p>
+                        </div>
+                        <div class="col-span-12 md:col-span-4 lg:col-span-5 flex items-end justify-end">
+                            <div class="p-8 border border-outline-variant/20 bg-surface-container-low text-right">
+                                <span class="font-label text-sm text-primary mb-2 block tracking-widest">COMMISSION_TIER</span>
+                                <div class="text-7xl font-headline font-bold text-white leading-none">20%</div>
+                                <span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Fixed per successful contract</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                        <div>
+                            <h2 class="font-headline text-5xl font-light tracking-tight text-white mb-6">Join the <br/>Collective.</h2>
+                            <p class="text-on-surface-variant text-lg mb-10 max-w-md">Become a strategic node in our growth network.</p>
+                        </div>
+                        <div class="bg-surface-container-low p-8 md:p-12 border border-outline-variant/10">
+                            {submitted ? (
+                                <div class="text-center py-20">
+                                    <span class="material-symbols-outlined text-primary text-6xl mb-6">verified_user</span>
+                                    <h3 class="font-headline text-2xl text-white mb-2">Protocol Initiated</h3>
+                                    <p class="text-on-surface-variant">Your application is being processed through our validation layer.</p>
+                                </div>
+                            ) : (
+                                <form class="space-y-8" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div class="space-y-2">
+                                            <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Full_Name</label>
+                                            <input required class="w-full bg-surface-container text-white border-0 border-b border-outline-variant focus:border-primary focus:ring-0 transition-colors py-3 text-sm font-body" placeholder="John Doe" type="text"/>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Email_Address</label>
+                                            <input required class="w-full bg-surface-container text-white border-0 border-b border-outline-variant focus:border-primary focus:ring-0 transition-colors py-3 text-sm font-body" placeholder="john@protocol.xyz" type="email"/>
+                                        </div>
+                                    </div>
+                                    <button class="kinetic-gradient w-full py-4 text-white font-headline font-bold uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 group">
+                                        Apply to Join <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    </button>
+                                </form>
+                            )}
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const ContactPage = () => {
+            const [submitted, setSubmitted] = useState(false);
+            return (
+                <main class="relative min-h-screen">
+                    <div class="absolute inset-0 kinetic-grid pointer-events-none"></div>
+                    <section class="max-w-[1440px] mx-auto px-8 pt-20 pb-12">
+                        <div class="grid grid-cols-12 gap-8">
+                            <div class="col-span-12 md:col-span-8 lg:col-span-6 md:col-start-2">
+                                <span class="font-label text-xs text-secondary uppercase tracking-[0.3em] mb-4 block">Bridge Protocol 1.0</span>
+                                <h1 class="font-headline font-light text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-8 leading-[1.1]">
+                                    Initiate <br/>Collaboration
+                                </h1>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="max-w-[1440px] mx-auto px-8 pb-32">
+                        <div class="grid grid-cols-12 gap-8">
+                            <div class="col-span-12 md:col-span-10 lg:col-span-8 md:col-start-2">
+                                <div class="bg-surface-container border border-outline-variant/10 p-8 md:p-12 relative">
+                                    {submitted ? (
+                                        <div class="text-center py-20">
+                                            <span class="material-symbols-outlined text-secondary text-6xl mb-6">rocket_launch</span>
+                                            <h3 class="font-headline text-3xl text-white mb-4">Sequence Executed</h3>
+                                            <p class="text-on-surface-variant">Our strike team will make contact within the next sync cycle.</p>
+                                        </div>
+                                    ) : (
+                                        <form class="space-y-12" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                                <div class="space-y-2 group">
+                                                    <label class="font-label text-[10px] uppercase tracking-widest text-outline-variant">01_Identity</label>
+                                                    <input required class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:border-primary focus:ring-0 text-white font-body py-4" placeholder="FULL NAME / ORGANIZATION" type="text"/>
+                                                </div>
+                                                <div class="space-y-2 group">
+                                                    <label class="font-label text-[10px] uppercase tracking-widest text-outline-variant">02_Communication_Channel</label>
+                                                    <input required class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:border-primary focus:ring-0 text-white font-body py-4" placeholder="SECURE_EMAIL@DOMAIN.COM" type="email"/>
+                                                </div>
+                                            </div>
+                                            <div class="space-y-2 group">
+                                                <label class="font-label text-[10px] uppercase tracking-widest text-outline-variant">04_Project_Specs</label>
+                                                <textarea required class="w-full bg-surface-container-low border-0 border-b border-outline-variant/20 focus:border-primary focus:ring-0 text-white font-body py-4" placeholder="DESCRIBE THE CORE LOGIC AND SCOPE OF THE INITIATIVE..." rows="4"></textarea>
+                                            </div>
+                                            <button type="submit" class="w-full bg-gradient-to-r from-primary to-primary-dim text-on-primary-fixed py-4 font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all flex items-center justify-center gap-3">
+                                                EXECUTE_PROTOCOL <span class="material-symbols-outlined text-sm">rocket_launch</span>
+                                            </button>
+                                        </form>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <div className="min-h-screen bg-background text-on-background flex flex-col">
+                        <Header />
+                        <div className="flex-grow">
+                            <Routes>
+                                <Route path="/" element={<LandingPage />} />
+                                <Route path="/services" element={<ServicesPage />} />
+                                <Route path="/portfolio" element={<PortfolioPage />} />
+                                <Route path="/affiliates" element={<AffiliatePage />} />
+                                <Route path="/contact" element={<ContactPage />} />
+                            </Routes>
+                        </div>
+                        <Footer />
+                    </div>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
